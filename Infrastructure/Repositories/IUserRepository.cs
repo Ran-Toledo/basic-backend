@@ -8,5 +8,6 @@ namespace BasicBackend.Infrastructure.Repositories
         Task<User?> GetByEmailAsync(string email);
         Task<User> AddAsync(User user);
         Task<bool> DeleteAsync(long id);
+        Task<int> SaveChangesAsync();
     }
 }

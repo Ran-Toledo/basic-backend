@@ -30,6 +30,17 @@ namespace BasicBackend.Api
                 return ok ? Results.NoContent() : Results.NotFound(new { error = "User not found" });
             }).RequireRateLimiting("fixed");
 
+            app.MapPut("/api/users/{id:long}", async (long id, UpdateUserDto dto, IUserService svc) =>
+            {
+                var errs = ValidateUpdate(dto);
+                if (errs.Count > 0) return Results.BadRequest(new { errors = errs });
+
+                var u = await svc.UpdateAsync(id, dto);
+                return u is null
+                    ? Results.NotFound(new { error = "User not found" })
+                    : Results.Ok(new UserDto(u.Id, u.Name, u.Email));
+            }).RequireRateLimiting("fixed");
+
             return app;
         }
 
@@ -39,6 +50,14 @@ namespace BasicBackend.Api
             if (string.IsNullOrWhiteSpace(dto.Name)) e.Add("Name is required.");
             if (string.IsNullOrWhiteSpace(dto.Email) || !dto.Email.Contains('@')) e.Add("Valid email is required.");
             if (string.IsNullOrWhiteSpace(dto.Password) || dto.Password.Length < 6) e.Add("Password must be ≥ 6 chars.");
+            return e;
+        }
+
+        static List<string> ValidateUpdate(UpdateUserDto dto)
+        {
+            var e = new List<string>();
+            if (string.IsNullOrWhiteSpace(dto.Name)) e.Add("Name is required.");
+            if (string.IsNullOrWhiteSpace(dto.Email) || !dto.Email.Contains('@')) e.Add("Valid email is required.");
             return e;
         }
     }

@@ -38,5 +38,10 @@ namespace BasicBackend.Infrastructure.Repositories
             await _db.SaveChangesAsync();
             return true;
         }
+
+        public Task<int> SaveChangesAsync()
+        {
+            return _db.SaveChangesAsync();
+        }
     }
 }

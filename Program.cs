@@ -8,7 +8,11 @@ using BasicBackend.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<AppDb>(opt => opt.UseInMemoryDatabase("app"));
+builder.Services.AddDbContext<AppDb>(opt =>
+{
+    var cs = builder.Configuration.GetConnectionString("Default");
+    opt.UseNpgsql(cs);
+});
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 

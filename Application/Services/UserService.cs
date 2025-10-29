@@ -43,5 +43,28 @@ namespace BasicBackend.Application.Services
         {
             return _repo.DeleteAsync(id);
         }
+
+        public async Task<User?> UpdateAsync(long id, UpdateUserDto dto)
+        {
+            var target = await _repo.GetAsync(id);
+            if (target is null) return null;
+
+            var other = await _repo.GetByEmailAsync(dto.Email);
+            if (other is not null && other.Id != id) throw new BadHttpRequestException("Email already registered", 409);
+
+            target.Name = dto.Name.Trim();
+            target.Email = dto.Email.Trim().ToLowerInvariant();
+
+            if (!string.IsNullOrWhiteSpace(dto.Password))
+            {
+                var salt = PasswordHasher.GenerateSalt();
+                var hash = PasswordHasher.Hash(dto.Password, salt);
+                target.PasswordSalt = salt;
+                target.PasswordHash = hash;
+            }
+
+            await _repo.SaveChangesAsync();
+            return target;
+        }
     }
 }
