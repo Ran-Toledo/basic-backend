@@ -40,4 +40,19 @@ app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
 app.MapUsersEndpoints();
 
+using (var scope = app.Services.CreateScope())
+{
+    var env = scope.ServiceProvider.GetRequiredService<IHostEnvironment>();
+    var db = scope.ServiceProvider.GetRequiredService<AppDb>();
+    var cfg = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+
+    await db.Database.MigrateAsync();
+
+    if (env.IsDevelopment())
+    {
+        await DbSeeder.SeedAsync(db, cfg);
+    }
+}
+
+
 app.Run();
